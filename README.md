@@ -38,8 +38,14 @@ Requires Node.js LTS (see `.nvmrc`) and [pnpm](https://pnpm.io).
 
 - [Product Requirements](docs/PRD.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Design System](docs/DESIGN_SYSTEM.md) — tokens, motion, and UI primitives
 - [Engineering Constitution](AGENTS.md)
 - [Architecture Decision Records](docs/adr/)
+
+## Design System
+
+Run `pnpm dev` and open [http://localhost:3000/design-system](http://localhost:3000/design-system)
+to browse every UI primitive. The route is stripped from production builds.
 
 ## License
 

@@ -159,3 +159,18 @@ Rules:
   without shouting candy.
 - Full token inventory: `src/styles/tokens.css`. Theme wiring:
   `src/app/globals.css`.
+
+---
+
+## Implementation
+
+- **Primitives:** every interactive UI component lives in `src/shared/ui`,
+  exportable only through the barrel `src/shared/ui/index.ts`. Radix UI
+  provides the headless accessibility layer (see
+  [ADR 0004](adr/0004-radix-primitives.md)); wrappers add nothing but token
+  classes via `cn()`.
+- **Showcase:** run `pnpm dev` and open `/design-system` — a dev-only,
+  axe-scanned living reference of every primitive. It is compiled to 404 in
+  production builds.
+- **Guards:** unit and component tests live under `tests/unit/shared/ui/`;
+  an e2e axe scan runs against the showcase in `tests/e2e/design-system.spec.ts`.
