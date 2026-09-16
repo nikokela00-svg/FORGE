@@ -5,6 +5,46 @@ import nextTs from "eslint-config-next/typescript";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
+// FORGE custom rules — enforce the design system conventions
+const forgeRules = {
+  rules: {
+    "no-arbitrary-tailwind": {
+      meta: {
+        type: "suggestion",
+        docs: {
+          description:
+            "Ban arbitrary Tailwind values in literal className strings (w-[347px]).",
+        },
+        schema: [],
+      },
+      create(context) {
+        return {
+          JSXAttribute(node) {
+            if (node.name.name !== "className") {
+              return;
+            }
+            const valueNode = node.value;
+            if (
+              valueNode === null ||
+              valueNode.type !== "Literal" ||
+              typeof valueNode.value !== "string"
+            ) {
+              return;
+            }
+            if (/(?<!aria)(?<!data)(?<!min)-\[/.test(valueNode.value)) {
+              context.report({
+                node,
+                message:
+                  "Arbitrary Tailwind values are banned. Use spacing, radii, and type from the design scales. Exceptions need a comment with justification.",
+              });
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
 export default defineConfig([
   globalIgnores([
     ".next/**",
@@ -25,6 +65,7 @@ export default defineConfig([
     files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
     plugins: {
       "simple-import-sort": simpleImportSort,
+      forge: forgeRules,
     },
     rules: {
       "simple-import-sort/imports": "error",
@@ -42,6 +83,8 @@ export default defineConfig([
           ],
         },
       ],
+
+      "forge/no-arbitrary-tailwind": "error",
     },
   },
 
