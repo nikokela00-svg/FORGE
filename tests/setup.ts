@@ -41,15 +41,25 @@ if (typeof globalRecord.ResizeObserver === "undefined") {
 if (typeof globalRecord.IntersectionObserver === "undefined") {
   globalRecord.IntersectionObserver = IntersectionObserverStub;
 }
+// jsdom provides no media queries; Radix portals expect a functional API
+if (typeof globalRecord.matchMedia === "undefined") {
+  globalRecord.matchMedia = matchMediaStub;
+}
 if (typeof globalRecord.Element !== "undefined") {
   const elementProto = Element.prototype as unknown as Record<string, unknown>;
   if (typeof elementProto.scrollIntoView === "undefined") {
     elementProto.scrollIntoView = () => {};
   }
-}
-// jsdom provides no media queries; Radix portals expect a functional API
-if (typeof globalRecord.matchMedia === "undefined") {
-  globalRecord.matchMedia = matchMediaStub;
+  // Radix Select/popper capture the pointer during open; jsdom has no PointerEvents support
+  if (typeof elementProto.hasPointerCapture === "undefined") {
+    elementProto.hasPointerCapture = () => false;
+  }
+  if (typeof elementProto.setPointerCapture === "undefined") {
+    elementProto.setPointerCapture = () => {};
+  }
+  if (typeof elementProto.releasePointerCapture === "undefined") {
+    elementProto.releasePointerCapture = () => {};
+  }
 }
 
 afterEach(() => {

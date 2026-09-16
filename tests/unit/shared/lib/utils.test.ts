@@ -11,8 +11,10 @@ describe("cn", () => {
   });
 
   it("merges conflicting Tailwind classes with the last one winning", () => {
-    expect(cn("px-2", "px-4", "text-foreground text-foreground-muted")).toBe(
-      "px-4 text-foreground-muted",
-    );
+    expect(cn("px-2", "px-4", "text-fg text-fg-muted")).toBe("px-4 text-fg-muted");
+  });
+
+  it("keeps text type scale and text color as distinct groups", () => {
+    expect(cn("text-13", "text-fg", "text-12")).toBe("text-fg text-12");
   });
 });
