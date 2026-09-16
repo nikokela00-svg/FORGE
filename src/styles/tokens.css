@@ -1,0 +1,180 @@
+/* Design tokens: raw primitive scales plus per-theme semantic roles (dark default, light override) */
+
+:root {
+  /* ==== Primitive: neutral (cool-grey ramp) ==== */
+  --neutral-0: #ffffff;
+  --neutral-1: #f6f6fa;
+  --neutral-2: #ededf4;
+  --neutral-3: #dcdde8;
+  --neutral-4: #c8c9d6;
+  --neutral-5: #afb0c0;
+  --neutral-6: #9899ac;
+  --neutral-7: #7d7e93;
+  --neutral-8: #616279;
+  --neutral-9: #484a5e;
+  --neutral-10: #2f3042;
+  --neutral-11: #1e1f2d;
+
+  /* ==== Primitive: accent (molten orange) ==== */
+  --accent-0: #fff9f1;
+  --accent-1: #ffeddc;
+  --accent-2: #ffdcb8;
+  --accent-3: #ffc68c;
+  --accent-4: #ffab5c;
+  --accent-5: #ff8f35;
+  --accent-6: #f9771c;
+  --accent-7: #e26414;
+  --accent-8: #c1510f;
+  --accent-9: #9d430f;
+  --accent-10: #7d3610;
+  --accent-11: #5f2c10;
+
+  /* ==== Primitive: red (danger) ==== */
+  --red-0: #fff6f4;
+  --red-1: #ffe8e3;
+  --red-2: #ffd5cc;
+  --red-3: #f9bfb3;
+  --red-4: #ee9c8c;
+  --red-5: #e07a66;
+  --red-6: #cf5d47;
+  --red-7: #b94a35;
+  --red-8: #9c3a28;
+  --red-9: #7d2f21;
+  --red-10: #62271d;
+  --red-11: #4a2019;
+
+  /* ==== Primitive: amber (warning) ==== */
+  --amber-0: #fffaf0;
+  --amber-1: #fff1d9;
+  --amber-2: #ffe3ae;
+  --amber-3: #fbd080;
+  --amber-4: #f0b25a;
+  --amber-5: #e1973e;
+  --amber-6: #cf8029;
+  --amber-7: #b36a1e;
+  --amber-8: #965816;
+  --amber-9: #784712;
+  --amber-10: #5e3810;
+  --amber-11: #482c0e;
+
+  /* ==== Primitive: green (success) ==== */
+  --green-0: #f2fbf4;
+  --green-1: #e0f6e6;
+  --green-2: #c4ecce;
+  --green-3: #a1dbb0;
+  --green-4: #7cc48e;
+  --green-5: #5cab6f;
+  --green-6: #469457;
+  --green-7: #377d47;
+  --green-8: #2c663a;
+  --green-9: #234f2f;
+  --green-10: #1c3d26;
+  --green-11: #162f1e;
+
+  /* ==== Primitive: blue (info) ==== */
+  --blue-0: #f3f7fd;
+  --blue-1: #e4eefb;
+  --blue-2: #cee1f6;
+  --blue-3: #b1cfef;
+  --blue-4: #8fb7e3;
+  --blue-5: #6f9fd3;
+  --blue-6: #5588c0;
+  --blue-7: #4172a9;
+  --blue-8: #335d8e;
+  --blue-9: #284a72;
+  --blue-10: #203b5c;
+  --blue-11: #192e47;
+
+  /* ==== Radii ==== */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-full: 9999px;
+
+  /* ==== Elevation (per-theme shadows) ==== */
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 1px rgb(0 0 0 / 0.28);
+  --elevation-2: 0 4px 8px -2px rgb(0 0 0 / 0.4), 0 2px 4px -1px rgb(0 0 0 / 0.32);
+  --elevation-3: 0 12px 24px -4px rgb(0 0 0 / 0.5), 0 4px 8px -2px rgb(0 0 0 / 0.36);
+
+  /* ==== Motion ==== */
+  --duration-instant: 70ms;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-blink: 1.1s;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-entrance: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ==== Z-index ==== */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-popover: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* ==== Semantic: dark theme (the design's default and origin) ==== */
+  --bg: #12131b;
+  --surface-1: color-mix(in srgb, var(--neutral-0) 4%, var(--bg));
+  --surface-2: color-mix(in srgb, var(--neutral-0) 7%, var(--bg));
+  --surface-3: color-mix(in srgb, var(--neutral-0) 10%, var(--bg));
+  --border: color-mix(in srgb, var(--neutral-0) 10%, var(--bg));
+  --border-strong: color-mix(in srgb, var(--neutral-0) 18%, var(--bg));
+  --border-muted: color-mix(in srgb, var(--neutral-0) 6%, var(--bg));
+  --fg: var(--neutral-2);
+  --fg-muted: var(--neutral-5);
+  --fg-subtle: var(--neutral-7);
+  --fg-inverse: var(--neutral-11);
+  --accent: var(--accent-5);
+  --accent-hover: var(--accent-4);
+  --accent-active: var(--accent-6);
+  --accent-fg: #1c150c;
+  --focus-ring: var(--accent-5);
+  --success: var(--green-4);
+  --success-muted: color-mix(in srgb, var(--green-5) 8%, transparent);
+  --warning: var(--amber-5);
+  --warning-muted: color-mix(in srgb, var(--amber-5) 8%, transparent);
+  --danger: var(--red-4);
+  --danger-muted: color-mix(in srgb, var(--red-5) 8%, transparent);
+  --info: var(--blue-4);
+  --info-muted: color-mix(in srgb, var(--blue-5) 9%, transparent);
+  --selection: color-mix(in srgb, var(--accent) 28%, transparent);
+  --overlay: color-mix(in srgb, #000000 55%, transparent);
+}
+
+/* ==== Semantic: light theme (derived) ==== */
+.light {
+  --bg: var(--neutral-1);
+  --surface-1: color-mix(in srgb, var(--neutral-11) 3%, var(--bg));
+  --surface-2: color-mix(in srgb, var(--neutral-11) 6%, var(--bg));
+  --surface-3: var(--neutral-0);
+  --border: color-mix(in srgb, var(--neutral-11) 12%, var(--bg));
+  --border-strong: color-mix(in srgb, var(--neutral-11) 22%, var(--bg));
+  --border-muted: color-mix(in srgb, var(--neutral-11) 7%, var(--bg));
+  --fg: var(--neutral-11);
+  --fg-muted: var(--neutral-9);
+  --fg-subtle: var(--neutral-8);
+  --fg-inverse: var(--neutral-1);
+  --accent: var(--accent-9);
+  --accent-hover: var(--accent-8);
+  --accent-active: var(--accent-10);
+  --accent-fg: var(--accent-0);
+  --focus-ring: var(--accent-8);
+  --success: var(--green-8);
+  --success-muted: color-mix(in srgb, var(--green-9) 10%, transparent);
+  --warning: var(--amber-8);
+  --warning-muted: color-mix(in srgb, var(--amber-9) 12%, transparent);
+  --danger: var(--red-8);
+  --danger-muted: color-mix(in srgb, var(--red-9) 10%, transparent);
+  --info: var(--blue-8);
+  --info-muted: color-mix(in srgb, var(--blue-9) 10%, transparent);
+  --selection: color-mix(in srgb, var(--accent) 24%, transparent);
+  --overlay: color-mix(in srgb, #000000 35%, transparent);
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.08), 0 1px 1px rgb(0 0 0 / 0.06);
+  --elevation-2: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --elevation-3: 0 12px 24px -4px rgb(0 0 0 / 0.14), 0 4px 8px -2px rgb(0 0 0 / 0.08);
+}
