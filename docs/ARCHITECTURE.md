@@ -51,6 +51,31 @@ Self-contained vertical slices. Each feature owns its UI, state, API calls,
 and types. Features communicate through Zustand stores or shared utilities —
 never through prop drilling or global event buses.
 
+### Shell Layer (`src/features/shell/`)
+
+The workspace shell is the permanent IDE frame every feature plugs into. It
+owns the frame and the wiring, and nothing about any feature's domain.
+
+| Concern          | Owner                  | How features participate                                  |
+| ---------------- | ---------------------- | --------------------------------------------------------- |
+| Window layout    | Shell                  | Not extensible; panels are fixed regions                  |
+| Activity bar     | Shell (static views)   | Views are a fixed registry of four `activeView` ids       |
+| Sidebar          | Shell (frame + header) | View body content comes from `views/{view}-view.tsx`      |
+| Bottom panel     | Shell (frame)          | Terminal pane content arrives with the terminal phase     |
+| Status bar       | Shell (frame)          | Items are contributed via `status-registry.ts`            |
+| Keybindings      | Shell                  | Registry (`keybindings.ts`) is the single source of truth |
+| Persistent prefs | Shell                  | Zod-validated rehydration in `shell-store.ts`             |
+
+Shell owns layout geometry, the global keyboard listener, panel collapse,
+and the status-bar contribution point. Features own their content and may
+register status items or future contributions without touching shell code.
+The contribution-point pattern (register/unregister/subscribe) is the
+template future feature surfaces follow.
+
+Shell state (sidebar/panel open + size, active view, modal flags) lives in
+one Zustand store per the vertical-slice rule, persisted to localStorage
+through a Zod schema with fallback-to-defaults on any mismatch.
+
 ### Shared Layer (`src/shared/`)
 
 Cross-cutting utilities, UI primitives, type definitions, and configuration
