@@ -16,7 +16,10 @@ function ScrollArea({
       className={cn("relative overflow-hidden", className)}
       {...props}
     >
-      <ScrollAreaPrimitive.Viewport className="size-full">
+      <ScrollAreaPrimitive.Viewport
+        className="size-full focus-visible:outline-none"
+        tabIndex={0}
+      >
         {children}
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
