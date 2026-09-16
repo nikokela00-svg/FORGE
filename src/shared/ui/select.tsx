@@ -11,6 +11,15 @@ function Select({ ...props }: ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root {...props} />;
 }
 
+function SelectLabel({ ...props }: ComponentProps<typeof SelectPrimitive.Label>) {
+  return (
+    <SelectPrimitive.Label
+      className="text-12 text-fg-muted px-2 py-1.5 font-medium"
+      {...props}
+    />
+  );
+}
+
 function SelectGroup({ ...props }: ComponentProps<typeof SelectPrimitive.Group>) {
   return <SelectPrimitive.Group {...props} />;
 }
@@ -101,4 +110,12 @@ SelectItem.displayName = "SelectItem";
 SelectTrigger.displayName = "SelectTrigger";
 SelectValue.displayName = "SelectValue";
 
-export { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue };
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+};

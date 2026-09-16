@@ -44,6 +44,8 @@ function DialogContent({
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
+        aria-modal="true"
+        role="dialog"
         className={cn(
           "z-modal border-border bg-surface-3 text-fg shadow-e3 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-1/2 left-1/2 w-11/12 max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border p-6",
           className,

@@ -34,7 +34,15 @@ export { Input, type InputProps } from "./input";
 export { Kbd } from "./kbd";
 export { Label } from "./label";
 export { ScrollArea, ScrollBar } from "./scroll-area";
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
 export { Separator } from "./separator";
 export { Skeleton } from "./skeleton";
 export { Spinner, type SpinnerProps } from "./spinner";
