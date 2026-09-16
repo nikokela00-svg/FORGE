@@ -1,7 +1,7 @@
-// FORGE home page — composes the boot feature slice
+// Home — the one-page workspace surface, composed from the shell feature slice
 import type { Metadata } from "next";
 
-import { BootScreen } from "@/features/boot";
+import { Shell } from "@/features/shell";
 import { siteConfig } from "@/shared/config/site";
 
 export const metadata: Metadata = {
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <BootScreen />;
+  return <Shell />;
 }

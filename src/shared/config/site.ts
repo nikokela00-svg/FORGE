@@ -5,5 +5,5 @@ export const siteConfig = {
   description:
     "A developer workspace that runs entirely in the browser. Zero-install, offline-first, and beautiful.",
   url: "https://forge.dev",
-  version: "0.1.0",
+  version: "0.3.0",
 } as const;

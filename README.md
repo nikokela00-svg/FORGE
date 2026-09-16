@@ -7,6 +7,17 @@
 A local-first, AI-native developer workspace that runs entirely in the
 browser. Zero-install, offline-first, and beautiful.
 
+## Features
+
+- **Workspace shell (v0.3.0)** — resizable activity bar, sidebar, and
+  collapsible terminal panel; persists layout across reloads; degrades to a
+  drawer on small screens.
+- **Global keyboard manager** — `Mod+B` toggles the sidebar, `Mod+J` the
+  terminal panel, `Shift+?` opens the shortcuts dialog (⌘ on macOS, Ctrl
+  elsewhere).
+- **Status bar with contribution points** — features plug in status items; the
+  bar also mirrors the theme, reports online state, and shows the version.
+
 ## Quickstart
 
 ```bash
@@ -38,6 +49,7 @@ Requires Node.js LTS (see `.nvmrc`) and [pnpm](https://pnpm.io).
 
 - [Product Requirements](docs/PRD.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Keybindings](docs/KEYBINDINGS.md) — the shell's default shortcuts
 - [Design System](docs/DESIGN_SYSTEM.md) — tokens, motion, and UI primitives
 - [Engineering Constitution](AGENTS.md)
 - [Architecture Decision Records](docs/adr/)
