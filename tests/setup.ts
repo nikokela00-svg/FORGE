@@ -3,7 +3,32 @@ import "@testing-library/jest-dom/vitest";
 import "fake-indexeddb/auto";
 
 import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
+import { afterEach, vi } from "vitest";
+
+// jsdom has no layout, so the real virtualizer measures zero items. Fake it as a
+// flat window: every row is visible with a fixed 22px height and no scrolling.
+vi.mock("@tanstack/react-virtual", () => {
+  const useVirtualizer = (options: {
+    count: number;
+    estimateSize?: (index: number) => number;
+    getItemKey?: (index: number) => string | number;
+  }) => {
+    const rowHeight = options.estimateSize?.(0) ?? 22;
+    const items = Array.from({ length: options.count }, (_, index) => ({
+      index,
+      start: index * rowHeight,
+      size: rowHeight,
+      key: options.getItemKey?.(index) ?? index,
+      measureElement: () => undefined,
+    }));
+    return {
+      getVirtualItems: () => items,
+      getTotalSize: () => options.count * rowHeight,
+      scrollToIndex: () => undefined,
+    };
+  };
+  return { useVirtualizer };
+});
 
 class ResizeObserverStub {
   observe(): void {}

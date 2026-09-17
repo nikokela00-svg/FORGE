@@ -1,9 +1,9 @@
 // Component tests for the workspace files view: both states, demo populate, reactive delete
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { db, DEFAULT_IMPORT_STATE, FilesView, useFsStore } from "@/features/fs";
+import { db, DEFAULT_IMPORT_STATE, FilesView, useFsStore, vfs } from "@/features/fs";
 
 async function resetEnvironment(): Promise<void> {
   localStorage.clear();
@@ -52,27 +52,24 @@ describe("FilesView", () => {
   });
 
   it("shows an honest empty state for a workspace with no files", async () => {
-    const user = userEvent.setup();
     render(<FilesView />);
 
-    await user.click(screen.getByRole("button", { name: "Create Demo Workspace" }));
-    expect(await screen.findByText("package.json")).toBeInTheDocument();
-
     useFsStore.setState({
-      currentWorkspaceId: "empty-ws",
+      currentWorkspaceId: (await vfs.createWorkspace({ name: "Empty" })).id,
       currentWorkspaceName: "Empty",
     });
     expect(await screen.findByText("This workspace is empty.")).toBeInTheDocument();
   });
 
-  it("removes a node through the delete dialog and updates the list reactively", async () => {
+  it("removes a node through the context menu and updates the list reactively", async () => {
     const user = userEvent.setup();
     render(<FilesView />);
 
     await user.click(screen.getByRole("button", { name: "Create Demo Workspace" }));
     expect(await screen.findByText("package.json")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Delete package.json" }));
+    fireEvent.contextMenu(screen.getByRole("treeitem", { name: "package.json" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
     const dialog = await screen.findByRole("dialog", {
       name: "Delete package.json?",
     });
