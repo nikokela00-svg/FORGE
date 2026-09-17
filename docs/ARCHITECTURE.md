@@ -125,8 +125,61 @@ POSIX-like API over the browser's IndexedDB. This gives us:
 - **Quotable.** Browser storage quotas (typically 50%+ of disk) are
   generous for code.
 
-File content is stored as `Uint8Array` blobs. Metadata (path, timestamps,
-permissions, encoding) is stored in a separate table for fast listing.
+File content is stored inline on the node row — `string` for utf-8 text,
+`Blob` for binary — while metadata (parent link, name, size, timestamps)
+lives on the same row so `stat`/`list` never materialise content. The shape
+is decided in [ADR 0006](adr/0006-vfs-schema.md).
+
+### File System Layer (`src/features/fs/`)
+
+The virtual file system is a vertical slice: every other feature reads and
+writes files **only** through the VFS API surface, never raw Dexie tables.
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  UI (shell sidebar → files view, status bar, shortcuts dialog)     │
+│  Components dispatch fs-store actions and subscribe to liveQuery   │
+└───────────────────────────┬────────────────────────────────────────┘
+                            │ store actions + liveQuery updates
+┌───────────────────────────▼────────────────────────────────────────┐
+│  fs-store (Zustand, `forge.fs.v1`)                                 │
+│  current workspace id (persisted), import progress, orchestration  │
+└───────────────────────────┬────────────────────────────────────────┘
+                            │ typed calls
+┌───────────────────────────▼────────────────────────────────────────┐
+│  VFS API (api/vfs.ts) — the only public write path                 │
+│  createFile/createDirectory/readFile/writeFile/listChildren/stat/  │
+│  exists/rename/move/deleteNode/getPath                             │
+│  Zod boundary: every write and every read is validated             │
+└───────────────────────────┬────────────────────────────────────────┘
+                            │ Dexie transactions
+┌───────────────────────────▼────────────────────────────────────────┐
+│  Dexie db (api/db.ts) → IndexedDB                                  │
+│  workspaces: id, name, createdAt                                   │
+│  nodes: id, workspaceId, parentId, name, type, content, mimeType,  │
+│         size, createdAt, updatedAt  — idx [workspaceId+parentId]   │
+└────────────────────────────────────────────────────────────────────┘
+
+  Side-channel import path (NOT the primary VFS write route):
+  File System Access bridge (api/fs-access.ts)
+    └── showDirectoryPicker() → recursive per-file import into a new
+        workspace (binary sniff, >2MB skip report, progress callback)
+```
+
+The File System Access bridge is the one place raw browser filesystem
+handles enter the product; everything it reads is written through the VFS
+API and validated by the same Zod-boundary rules as user-typed writes.
+
+### File System Non-Goals (current phase)
+
+- **No cross-tab sync.** IndexedDB is origin-scoped; two tabs do not
+  coordinate. Later phase.
+- **No version history.** Writes overwrite in place; snapshots/undo arrive
+  with a later phase.
+- **No tree UI.** The files view today renders the workspace root listing
+  only; expansion, drag-and-drop, and search are future prompts.
+- **No editor/terminal.** The VFS persists; opening and editing files are
+  later phases that consume it.
 
 ### Why Local-First
 
