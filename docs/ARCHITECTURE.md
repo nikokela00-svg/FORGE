@@ -170,16 +170,51 @@ The File System Access bridge is the one place raw browser filesystem
 handles enter the product; everything it reads is written through the VFS
 API and validated by the same Zod-boundary rules as user-typed writes.
 
+### Explorer (`src/features/fs/explorer/`)
+
+The explorer renders the workspace as a windowed file tree and is a
+self-contained vertical slice inside the `fs` feature. Decision:
+[ADR 0007](adr/0007-explorer-architecture.md).
+
+```
+fs-store (current workspace id, listing revision) ──┐
+   ▲                                                │ writes: create/rename/
+   │ × bump listingRevision                        ▼ move/delete via VFS API
+explorer-store (Zustand, session-only)       useWorkspaceNodes (liveQuery)
+expanded / selected / focused /              ▾
+renaming / creating / dropTarget             FileNode[]
+   │                                            │
+   └──────────────► flattenTree ──► VisibleRow[] (pure lib/tree.ts)
+                       + keyNav / nextTypeAhead / resolveDrop / validateName
+                       │
+                       ▼
+                   windowed FileTree
+                       │ (1 file selected)
+                       ▼
+                  preview-pane (read-only)
+```
+
+- **`explorer/lib/tree.ts`** — pure, DOM-free tree math: flattening, drop
+  resolution, name validation, keyboard navigation, type-ahead.
+- **`explorer/model/explorer-store.ts`** — non-persisted UI state
+  (expansion, selection, focus, rename/create/drop context). The workspace
+  id stays in `fs-store`.
+- **`explorer/ui/`** — `file-tree.tsx` (windowed tree, drag-and-drop,
+  keyboard), `inline-input.tsx` (rename/create row), `tree-context-menu.tsx`,
+  `preview-pane.tsx` (read-only file preview hosted in the shell editor
+  panel; editing is a later prompt).
+- Every tree mutation dispatches an `fs-store` action that calls the VFS API
+  and bumps `listingRevision`, re-firing the single workspace-wide liveQuery.
+
 ### File System Non-Goals (current phase)
 
 - **No cross-tab sync.** IndexedDB is origin-scoped; two tabs do not
   coordinate. Later phase.
 - **No version history.** Writes overwrite in place; snapshots/undo arrive
   with a later phase.
-- **No tree UI.** The files view today renders the workspace root listing
-  only; expansion, drag-and-drop, and search are future prompts.
-- **No editor/terminal.** The VFS persists; opening and editing files are
-  later phases that consume it.
+- **No file editing.** The preview pane is read-only; editing is a later
+  prompt that consumes the VFS API.
+- **No terminal.** The embedded terminal arrives with a later phase.
 
 ### Why Local-First
 
