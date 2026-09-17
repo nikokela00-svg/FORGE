@@ -10,6 +10,6 @@ test("home page boots the FORGE workspace shell", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Explorer" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
-  await expect(page.getByText("v0.4.0")).toBeVisible();
+  await expect(page.getByText("v0.5.0")).toBeVisible();
   await expect(page.getByText("online")).toBeVisible();
 });

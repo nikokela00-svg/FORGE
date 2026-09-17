@@ -14,6 +14,6 @@ describe("BootScreen", () => {
   it("renders the foundation version footer", () => {
     render(<BootScreen />);
 
-    expect(screen.getByText("v0.4.0 — foundation")).toBeInTheDocument();
+    expect(screen.getByText("v0.5.0 — foundation")).toBeInTheDocument();
   });
 });
