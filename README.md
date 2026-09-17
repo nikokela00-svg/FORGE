@@ -17,6 +17,9 @@ browser. Zero-install, offline-first, and beautiful.
   elsewhere).
 - **Status bar with contribution points** — features plug in status items; the
   bar also mirrors the theme, reports online state, and shows the version.
+- **Virtual file system (v0.4.0)** — IndexedDB-persisted workspaces,
+  imports folders from disk via the File System Access API, ships with a
+  one-click demo workspace.
 
 ## Quickstart
 

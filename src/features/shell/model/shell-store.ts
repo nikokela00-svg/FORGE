@@ -1,7 +1,10 @@
 // Shell layout state: zod-validated persistence, actions the only mutation path
 import { z } from "zod";
 import { create } from "zustand";
-import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
+import { type PersistStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+
+import { createSafeJSONStorage } from "@/shared/lib/storage";
 
 export const ACTIVE_VIEWS = ["files", "search", "source-control", "extensions"] as const;
 export type ActiveView = (typeof ACTIVE_VIEWS)[number];
@@ -55,39 +58,6 @@ export interface ShellState extends ShellPersisted {
   setShortcutsDialogOpen: (open: boolean) => void;
 }
 
-// Storage that can neither throw on a missing API (SSR) nor crash rehydration
-function createSafeJSONStorage(
-  getStorage: () => Storage | null | undefined,
-): PersistStorage<ShellPersisted> {
-  return {
-    getItem: (name) => {
-      try {
-        const raw = getStorage()?.getItem(name) ?? null;
-        if (raw === null) return null;
-        // Arbitrary old JSON is expected; the persist merge revalidates against the schema
-        const parsed = JSON.parse(raw) as unknown;
-        return parsed as StorageValue<ShellPersisted>;
-      } catch {
-        return null;
-      }
-    },
-    setItem: (name, value) => {
-      try {
-        getStorage()?.setItem(name, JSON.stringify(value));
-      } catch {
-        // Quota or private-mode write failures never crash the shell
-      }
-    },
-    removeItem: (name) => {
-      try {
-        getStorage()?.removeItem(name);
-      } catch {
-        // Best-effort removal
-      }
-    },
-  };
-}
-
 export function createShellStore(storage?: PersistStorage<ShellPersisted>) {
   return create<ShellState>()(
     persist(
@@ -114,7 +84,7 @@ export function createShellStore(storage?: PersistStorage<ShellPersisted>) {
         version: SHELL_SCHEMA_VERSION,
         storage:
           storage ??
-          createSafeJSONStorage(() => {
+          createSafeJSONStorage<ShellPersisted>(() => {
             if (typeof localStorage === "undefined") return null;
             return localStorage;
           }),

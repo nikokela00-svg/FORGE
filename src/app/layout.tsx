@@ -1,4 +1,4 @@
-// Root layout: fonts, base theme variables, and document metadata
+// Root layout: fonts, base theme variables, document metadata, and the toast host
 import "./globals.css";
 
 import type { Metadata } from "next";
@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import { siteConfig } from "@/shared/config/site";
 import { ThemeProvider } from "@/shared/ui/theme-provider";
+import { Toaster } from "@/shared/ui/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
