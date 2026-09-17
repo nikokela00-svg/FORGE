@@ -328,6 +328,22 @@ export function createVfs() {
     });
   }
 
+  // Returns every node of a workspace (dirs-first sort preserved for depth-0
+  // rows) so the explorer can derive the visible tree from one liveQuery.
+  async function listWorkspaceNodes(workspaceId: string): Promise<FileNode[]> {
+    await mustGetWorkspace(workspaceId);
+    const rows = await db.nodes
+      .where("[workspaceId+parentId]")
+      .aboveOrEqual([workspaceId, ROOT_PARENT])
+      .toArray();
+    const nodes: FileNode[] = [];
+    for (const row of rows) {
+      if (row.workspaceId !== workspaceId) continue;
+      nodes.push(fileNode(recordFromRow(row, "node")));
+    }
+    return nodes;
+  }
+
   async function stat(id: string): Promise<FileNode | null> {
     const row = await db.nodes.get(id);
     if (row === undefined) return null;
@@ -402,6 +418,7 @@ export function createVfs() {
     getPath,
     getWorkspace,
     listChildren,
+    listWorkspaceNodes,
     move,
     readFile,
     rename,

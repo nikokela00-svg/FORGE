@@ -7,13 +7,14 @@ import { persist } from "zustand/middleware";
 import { createSafeJSONStorage } from "@/shared/lib/storage";
 import { toast } from "@/shared/ui";
 
+import type { NodeType } from "../api/db";
 import {
   type ImportProgress,
   importWorkspaceFromDirectory,
   requestDirectory,
 } from "../api/fs-access";
 import { createDemoWorkspace as seedDemoWorkspace } from "../api/seed";
-import { vfs, type VfsApi, type WorkspaceMeta } from "../api/vfs";
+import { type FileNode, vfs, type VfsApi, type WorkspaceMeta } from "../api/vfs";
 import { describeReport } from "../lib/report";
 
 const FS_STORAGE_KEY = "forge.fs.v1";
@@ -49,6 +50,14 @@ export interface FsState extends FsPersisted {
   openFolderFromDisk: (vfsApi?: VfsApi) => Promise<void>;
   createDemoWorkspace: (vfsApi?: VfsApi) => Promise<WorkspaceMeta>;
   reconcileWorkspace: (vfsApi?: VfsApi) => Promise<void>;
+  createWorkspaceNode: (input: {
+    parentId: string;
+    name: string;
+    type: NodeType;
+    content?: string | undefined;
+  }) => Promise<FileNode>;
+  renameWorkspaceNode: (id: string, name: string) => Promise<FileNode>;
+  moveWorkspaceNodes: (ids: readonly string[], parentId: string) => Promise<void>;
   deleteWorkspaceNode: (id: string) => Promise<void>;
   clearImportState: () => void;
 }
@@ -108,6 +117,34 @@ export function createFsStore(storage?: PersistStorage<FsPersisted>) {
           get().openWorkspace(null, null);
         },
         clearImportState: () => set({ importState: DEFAULT_IMPORT_STATE }),
+        createWorkspaceNode: async ({ parentId, name, type, content }) => {
+          const storedParent = parentId === "" ? null : parentId;
+          const created =
+            type === "directory"
+              ? await vfs.createDirectory({
+                  workspaceId: get().currentWorkspaceId ?? "",
+                  parentId: storedParent,
+                  name,
+                })
+              : await vfs.createFile({
+                  workspaceId: get().currentWorkspaceId ?? "",
+                  parentId: storedParent,
+                  name,
+                  content: content ?? "",
+                });
+          set((state) => ({ listingRevision: state.listingRevision + 1 }));
+          return created;
+        },
+        renameWorkspaceNode: async (id, name) => {
+          const renamed = await vfs.rename(id, name);
+          set((state) => ({ listingRevision: state.listingRevision + 1 }));
+          return renamed;
+        },
+        moveWorkspaceNodes: async (ids, parentId) => {
+          const storedParent = parentId === "" ? null : parentId;
+          await Promise.all(ids.map((id) => vfs.move(id, storedParent)));
+          set((state) => ({ listingRevision: state.listingRevision + 1 }));
+        },
         deleteWorkspaceNode: async (id) => {
           await vfs.deleteNode(id);
           set((state) => ({ listingRevision: state.listingRevision + 1 }));

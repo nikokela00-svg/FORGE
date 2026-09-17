@@ -11,6 +11,8 @@ import {
   usePanelRef,
 } from "react-resizable-panels";
 
+import { PreviewPane } from "@/features/fs";
+
 import {
   PANEL_MAX,
   PANEL_MIN,
@@ -20,7 +22,6 @@ import {
 } from "../model/shell-store";
 import { ActivityBar } from "./activity-bar";
 import { BottomPanel } from "./bottom-panel";
-import { EmptyEditor } from "./empty-editor";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { Sidebar } from "./sidebar";
 import { StatusBar } from "./status-bar";
@@ -110,7 +111,7 @@ function DesktopSplit() {
           onLayoutChanged={handlePanelLayout}
         >
           <Panel id="editor" className="min-h-0 min-w-0">
-            <EmptyEditor />
+            <PreviewPane />
           </Panel>
           <Separator />
           <Panel
@@ -172,7 +173,7 @@ function MobileMain() {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="min-h-0 flex-1">
-        <EmptyEditor />
+        <PreviewPane />
       </div>
       {panelOpen && (
         <div className="border-border h-48 shrink-0 border-t">

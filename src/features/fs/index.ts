@@ -30,6 +30,32 @@ export {
   type VfsErrorCode,
 } from "./api/vfs";
 export {
+  type CreateIntent,
+  type CreateRow,
+  type DropPosition,
+  type DropResolution,
+  flattenTree,
+  keyNav,
+  type KeyNavResult,
+  type NameValidation,
+  type NavKey,
+  nextTypeAhead,
+  type NodeRow,
+  resolveDrop,
+  rowKey,
+  validateName,
+  type VisibleRow,
+} from "./explorer/lib/tree";
+export { useWorkspaceNodes } from "./explorer/lib/use-workspace-nodes";
+export {
+  createExplorerStore,
+  type DropTarget,
+  EXPLORER_INITIAL_STATE,
+  useExplorerStore,
+} from "./explorer/model/explorer-store";
+export { FileTree } from "./explorer/ui/file-tree";
+export { PreviewPane } from "./explorer/ui/preview-pane";
+export {
   basename,
   dirname,
   extname,

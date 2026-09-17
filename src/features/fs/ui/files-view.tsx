@@ -1,138 +1,46 @@
-// Explorer content — empty state, workspace root listing, delete confirm, import progress
+// Explorer content — toolbar with create/collapse actions, windowed tree, empty and import states
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
-import { FileText, Folder, FolderOpen, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { FilePlus2, FolderOpen as FolderOpenIcon, ListCollapse } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import {
   Button,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   IconButton,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared/ui";
-import { toast } from "@/shared/ui";
 
 import { isFileSystemAccessSupported } from "../api/fs-access";
-import type { FileNode } from "../api/vfs";
-import { vfs } from "../api/vfs";
-import { formatBytes } from "../lib/report";
+import { useWorkspaceNodes } from "../explorer/lib/use-workspace-nodes";
+import { useExplorerStore } from "../explorer/model/explorer-store";
+import { FileTree } from "../explorer/ui/file-tree";
 import { useFsStore } from "../model/fs-store";
-
-function useRootChildren(
-  workspaceId: string | null,
-  listingRevision: number,
-): FileNode[] | null | undefined {
-  return useLiveQuery(
-    () =>
-      workspaceId === null
-        ? Promise.resolve(null)
-        : vfs.listChildren(workspaceId, null).then(sortDirectoriesFirst),
-    [workspaceId, listingRevision],
-  );
-}
-
-function sortDirectoriesFirst(nodes: readonly FileNode[]): FileNode[] {
-  return [...nodes].sort((a, b) => {
-    if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
-    return a.name.localeCompare(b.name, "en", { sensitivity: "base" });
-  });
-}
-
-function CommitToDelete({
-  node,
-  open,
-  onOpenChange,
-  onConfirm,
-}: {
-  node: FileNode;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) onOpenChange(false);
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete {node.name}?</DialogTitle>
-          <DialogDescription>
-            {node.type === "directory"
-              ? `This permanently removes ${node.name} and all of its contents from the workspace.`
-              : `${node.name} will be permanently removed from the workspace.`}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary" size="sm">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button variant="danger" size="sm" onClick={onConfirm}>
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function NodeRow({
-  node,
-  onDelete,
-}: {
-  node: FileNode;
-  onDelete: (node: FileNode) => void;
-}) {
-  const Icon = node.type === "directory" ? Folder : FileText;
-  return (
-    <li>
-      <div className="group hover:bg-surface-2 flex min-w-0 items-center gap-2 rounded-sm px-2 py-1">
-        <Icon className="text-fg-muted size-4 shrink-0" aria-hidden="true" />
-        <span className="text-fg text-12 min-w-0 flex-1 truncate">{node.name}</span>
-        {node.type === "file" && (
-          <span className="text-fg-subtle text-11 shrink-0 tabular-nums">
-            {formatBytes(node.size)}
-          </span>
-        )}
-        <IconButton
-          variant="ghost"
-          size="sm"
-          aria-label={`Delete ${node.name}`}
-          className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          onClick={() => {
-            onDelete(node);
-          }}
-        >
-          <Trash2 className="text-fg-muted size-3.5" aria-hidden="true" />
-        </IconButton>
-      </div>
-    </li>
-  );
-}
 
 function EmptyWorkspace() {
   const openFolderFromDisk = useFsStore((state) => state.openFolderFromDisk);
   const createDemoWorkspace = useFsStore((state) => state.createDemoWorkspace);
   const importState = useFsStore((state) => state.importState);
   const importing = importState.status === "importing";
-  const folderSupported = isFileSystemAccessSupported();
+  // Resolved after hydration so the server and client render the same safe
+  // default; the honest Chromium-only message appears once mounted.
+  const [folderSupported, setFolderSupported] = useState(false);
+
+  useEffect(() => {
+    // Hydration-safe: initial render must match server (false) so the button
+    // is disabled during SSR; the real value is detected client-side.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- justified above
+    setFolderSupported(isFileSystemAccessSupported());
+  }, []);
 
   return (
     <div className="flex min-h-full flex-col justify-center gap-3 px-4 py-6">
-      <FolderOpen className="text-fg-subtle size-8" aria-hidden="true" />
+      <FolderOpenIcon className="text-fg-subtle size-8" aria-hidden="true" />
       <div className="flex flex-col gap-0.5">
-        <p className="text-13 text-fg font-medium">No workspace opened yet.</p>
+        <p className="text-fg text-13 font-medium">No workspace opened yet.</p>
         <p className="text-fg-muted text-12">
           Import a local folder as a workspace, or try the demo project to explore FORGE.
         </p>
@@ -175,58 +83,70 @@ function EmptyWorkspace() {
   );
 }
 
-function WorkspaceListing({ nodes }: { nodes: FileNode[] }) {
-  const openFolderFromDisk = useFsStore((state) => state.openFolderFromDisk);
+function ExplorerToolbar() {
   const workspaceName = useFsStore((state) => state.currentWorkspaceName);
-  const deleteWorkspaceNode = useFsStore((state) => state.deleteWorkspaceNode);
-  const [pendingDelete, setPendingDelete] = useState<FileNode | null>(null);
-
-  const confirmDelete = useCallback(() => {
-    if (pendingDelete === null) return;
-    void deleteWorkspaceNode(pendingDelete.id)
-      .then(() => {
-        toast(`Deleted ${pendingDelete.name}`);
-        setPendingDelete(null);
-      })
-      .catch((error: unknown) => {
-        toast("Delete failed", {
-          description: error instanceof Error ? error.message : undefined,
-        });
-        setPendingDelete(null);
-      });
-  }, [pendingDelete, deleteWorkspaceNode]);
+  const openFolderFromDisk = useFsStore((state) => state.openFolderFromDisk);
+  const creating = useExplorerStore((state) => state.creating);
+  const startCreating = useExplorerStore((state) => state.startCreating);
+  const collapseAll = useExplorerStore((state) => state.collapseAll);
 
   return (
-    <div className="flex min-h-full flex-col gap-1 px-2 py-3">
-      <div className="flex items-center justify-between gap-2 px-2">
-        <h3 className="text-11 text-fg-muted min-w-0 flex-1 truncate font-mono tracking-widest uppercase">
-          {workspaceName ?? "Workspace"}
-        </h3>
-        <Button variant="ghost" size="sm" onClick={() => void openFolderFromDisk()}>
-          Open Folder…
-        </Button>
-      </div>
-      {nodes.length === 0 ? (
-        <p className="text-fg-muted text-12 px-2 py-6">This workspace is empty.</p>
-      ) : (
-        <ul className="flex flex-col">
-          {nodes.map((node) => (
-            <NodeRow key={node.id} node={node} onDelete={setPendingDelete} />
-          ))}
-        </ul>
-      )}
-      {pendingDelete !== null && (
-        <CommitToDelete
-          node={pendingDelete}
-          open
-          onOpenChange={(next) => {
-            if (!next) setPendingDelete(null);
-          }}
-          onConfirm={() => {
-            confirmDelete();
-          }}
-        />
-      )}
+    <div className="border-border flex h-9 shrink-0 items-center justify-between gap-2 border-b px-2">
+      <h3 className="text-fg-muted text-11 min-w-0 flex-1 truncate font-mono tracking-widest uppercase">
+        {workspaceName ?? "Workspace"}
+      </h3>
+      <TooltipProvider>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                variant="ghost"
+                size="sm"
+                aria-label="New File"
+                disabled={creating !== null}
+                onClick={() => {
+                  startCreating("", "file");
+                }}
+              >
+                <FilePlus2 className="size-3.5" aria-hidden="true" />
+              </IconButton>
+            </TooltipTrigger>
+            <TooltipContent>New File</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                variant="ghost"
+                size="sm"
+                aria-label="New Folder"
+                disabled={creating !== null}
+                onClick={() => {
+                  startCreating("", "directory");
+                }}
+              >
+                <FolderOpenIcon className="size-3.5" aria-hidden="true" />
+              </IconButton>
+            </TooltipTrigger>
+            <TooltipContent>New Folder</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                variant="ghost"
+                size="sm"
+                aria-label="Collapse All"
+                onClick={collapseAll}
+              >
+                <ListCollapse className="size-3.5" aria-hidden="true" />
+              </IconButton>
+            </TooltipTrigger>
+            <TooltipContent>Collapse All</TooltipContent>
+          </Tooltip>
+          <Button variant="ghost" size="sm" onClick={() => void openFolderFromDisk()}>
+            Open Folder…
+          </Button>
+        </div>
+      </TooltipProvider>
     </div>
   );
 }
@@ -250,11 +170,16 @@ function FilesView() {
   const workspaceId = useFsStore((state) => state.currentWorkspaceId);
   const listingRevision = useFsStore((state) => state.listingRevision);
   const reconcileWorkspace = useFsStore((state) => state.reconcileWorkspace);
-  const nodes = useRootChildren(workspaceId, listingRevision);
+  const resetExplorer = useExplorerStore((state) => state.resetExplorer);
+  const nodes = useWorkspaceNodes(workspaceId, listingRevision);
 
   useEffect(() => {
     void reconcileWorkspace();
   }, [reconcileWorkspace]);
+
+  useEffect(() => {
+    resetExplorer();
+  }, [workspaceId, resetExplorer]);
 
   if (workspaceId === null) return <EmptyWorkspace />;
   if (nodes === undefined) {
@@ -265,10 +190,12 @@ function FilesView() {
       </div>
     );
   }
+
   return (
     <div className="flex min-h-full flex-col">
       <ImportProgressLine />
-      <WorkspaceListing nodes={nodes ?? []} />
+      <ExplorerToolbar />
+      <FileTree nodes={nodes} />
     </div>
   );
 }
