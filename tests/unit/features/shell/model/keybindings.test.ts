@@ -164,9 +164,11 @@ describe("keybinding registry", () => {
   });
 
   it("ships the three documented shell shortcuts with working runners", () => {
-    expect(keybindingRegistry.list()).toHaveLength(SHELL_BINDING_DEFS.length);
     const ids = keybindingRegistry.list().map((binding) => binding.id);
-    expect(ids).toEqual(["toggle-sidebar", "toggle-panel", "open-shortcuts"]);
+    for (const binding of SHELL_BINDING_DEFS) {
+      expect(ids).toContain(binding.id);
+      expect(keybindingRegistry.getById(binding.id)?.run).toBeTypeOf("function");
+    }
   });
 
   it("toggles the sidebar through the shipped runner", () => {

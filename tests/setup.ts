@@ -1,5 +1,6 @@
-// Vitest setup — jest-dom matchers, DOM polyfills, and cleanup between tests
+// Vitest setup — jest-dom matchers, DOM polyfills, IndexedDB backend, and cleanup
 import "@testing-library/jest-dom/vitest";
+import "fake-indexeddb/auto";
 
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";

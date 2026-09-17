@@ -44,6 +44,7 @@ test("switches views from the activity bar", async ({ page }) => {
 
 test("opens keyboard shortcuts with Shift+? and closes via Done", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("region", { name: "FORGE — empty editor" })).toBeVisible();
 
   await page.keyboard.press("Shift+?");
   const dialog = page.getByRole("dialog", { name: "Keyboard Shortcuts" });
@@ -69,6 +70,7 @@ test("shell has no critical or serious axe violations", async ({ page }) => {
 
 test("shortcuts dialog is accessible while open", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("region", { name: "FORGE — empty editor" })).toBeVisible();
 
   await page.keyboard.press("Shift+?");
   await expect(page.getByRole("dialog", { name: "Keyboard Shortcuts" })).toBeVisible();
